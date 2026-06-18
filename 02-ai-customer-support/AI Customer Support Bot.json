@@ -1,0 +1,187 @@
+{
+  "name": "AI Customer Support Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bdeab1f9-7847-465f-9ebc-9b1d8ec4d8d1",
+      "name": "Webhook",
+      "webhookId": "185a8400-ca12-410a-b7fb-53cecadcc36a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a customer support assistant for 'TechStore India'. We sell laptops, phones, and accessories. We offer free delivery above ₹999. Return policy is 7 days. Working hours: Mon-Sat 10AM-8PM. Email: support@techstore.in. Only answer based on this information.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{$json.body.message}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b1e346c5-a6cf-438b-8af5-0682e5ba6d3e",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Rho9qiWrJeavSKKk",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"reply\":\"{{$json.choices[0].message.content}}\"}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "5299ee07-69d8-4868-8130-6b37a31a6929",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15QTYBxssTWgYLVZKzIECDBsybUMrIxQL1vHVrVZuo-8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-ai-support-bot-logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15QTYBxssTWgYLVZKzIECDBsybUMrIxQL1vHVrVZuo-8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15QTYBxssTWgYLVZKzIECDBsybUMrIxQL1vHVrVZuo-8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TIMESTAMP": "={{ new Date().toISOString() }}",
+            "USER MESSAGE ": "={{ $('Webhook').item.json.body.message }}",
+            "BOT REPLY": "={{ $json.choices[0].message.content }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TIMESTAMP",
+              "displayName": "TIMESTAMP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "USER MESSAGE ",
+              "displayName": "USER MESSAGE ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "BOT REPLY",
+              "displayName": "BOT REPLY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        0
+      ],
+      "id": "84ab5062-be0d-4a63-8c81-cb334d850b7e",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KDCvrEDMOLXMGSuU",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "274bd83b-e276-47a4-baf1-fc5a174776bb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f98c14d88465bbf10f675597510e7d29d8a0948b16f1002874518cb1dddf109a"
+  },
+  "nodeGroups": [],
+  "id": "IqoXWBNcoqqW7lEv",
+  "tags": []
+}

@@ -1,0 +1,541 @@
+{
+  "name": "Inventory alert system",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5f24fce3-b232-4867-a77e-a335c7da28df",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "98a13acc-de43-458b-a4f6-2a73baad2102",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1ca18c2d-b4c7-4b0e-a39b-534b487597d7",
+              "leftValue": "={{ $json['CURRENT STOCK'] }}",
+              "rightValue": "={{ $json['REORDER THRESHOLD'] }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "c41eafc2-b181-4639-9220-e9ca58a402e0",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBQTF9WTY",
+          "mode": "id"
+        },
+        "text": "=⚠️ Low stock alert: {{ $json['PRODUCT NAME'] }} has only {{ $json['CURRENT STOCK'] }} units left (reorder threshold: {{ $json['REORDER THRESHOLD'] }})",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        624,
+        0
+      ],
+      "id": "bebaf449-c81c-42c8-b06f-01628fae700c",
+      "name": "Send a message",
+      "webhookId": "d0de4fae-0550-4b0b-af45-c079de13f572",
+      "credentials": {
+        "slackApi": {
+          "id": "Nb9eMtYXuvnoCExV",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2d313cdc-aa3a-48d3-8035-ee9e78d49442",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        208
+      ],
+      "id": "519cc75c-c6e2-48e3-ac06-13ab2ad0bb51",
+      "name": "Webhook",
+      "webhookId": "2d313cdc-aa3a-48d3-8035-ee9e78d49442"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "PRODUCT NAME",
+              "lookupValue": "={{$json.body.productName}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        208
+      ],
+      "id": "cde6ca18-2529-4f82-a46a-e06631b8d71c",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentStock = $input.first().json['CURRENT STOCK'];\nconst quantityOrdered = $('Webhook').first().json.body.quantityOrdered;\nconst newStock = currentStock - quantityOrdered;\n\nreturn [{\n  rowNumber : $input.first().json.row_number,\n  productName : $input.first().json['PRODUCT NAME'],\n  newStock : newStock,\n  reorderThreshold :$input.first().json['REORDER THRESHOLD']\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        208
+      ],
+      "id": "21994c17-6cd1-4d17-a9b2-62845fa0279d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.rowNumber }}",
+            "CURRENT STOCK": "={{ $json.newStock }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "PRODUCT NAME",
+              "displayName": "PRODUCT NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CURRENT STOCK",
+              "displayName": "CURRENT STOCK",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "REORDER THRESHOLD",
+              "displayName": "REORDER THRESHOLD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PRICE",
+              "displayName": "PRICE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LAST UPDATED",
+              "displayName": "LAST UPDATED",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        624,
+        208
+      ],
+      "id": "5be5200d-dbfc-43fc-8e68-32fdb4631d7f",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e018dbd4-1232-4317-b7c7-8d244862ba13",
+              "leftValue": "={{ $json['CURRENT STOCK'] }}",
+              "rightValue": "={{ $('Get row(s) in sheet1').item.json['REORDER THRESHOLD'] }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        208
+      ],
+      "id": "601323e5-ada5-4aec-810c-bea6f83afdef",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBQTF9WTY",
+          "mode": "id"
+        },
+        "text": "=🔔 Order processed! {{ $json['CURRENT STOCK'] }} units of stock remaining(below stock threshold) - restocking needed",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        1040,
+        208
+      ],
+      "id": "c5360fd2-2657-4a8f-93f0-cbe1f2f9c276",
+      "name": "Send a message1",
+      "webhookId": "3186c71c-88d8-47bc-8517-8d25dbb2109e",
+      "credentials": {
+        "slackApi": {
+          "id": "Nb9eMtYXuvnoCExV",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-inventory",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        448
+      ],
+      "id": "8d0c5506-ae8b-448f-be2d-25d9dc2bbc9c",
+      "name": "Webhook1",
+      "webhookId": "d016a96e-61d0-4584-90c8-8df6bec1e057"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1C2p75iMiMdg4VvUn1CBKBA97J78h86gEJwMczt9H06E/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        448
+      ],
+      "id": "8c1c2aa8-1972-4fbb-8852-0565f5b97587",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        400,
+        448
+      ],
+      "id": "66eada98-d815-4271-8752-92a2856cac8f",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3c5fcb21-c837-4392-82ad-ff1e5071f801",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e6661d111fee1d2a00b75ea4b24e7f3dbffd39d9fedf5aec30935111d882145"
+  },
+  "nodeGroups": [],
+  "id": "qeH3qxDcSJZvpLxl",
+  "tags": []
+}

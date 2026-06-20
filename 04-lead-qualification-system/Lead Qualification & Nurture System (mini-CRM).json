@@ -1,0 +1,635 @@
+{
+  "name": "Lead Qualification & Nurture System (mini-CRM).",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4bf16855-5f6f-47df-bba2-aff413196074",
+      "name": "Webhook",
+      "webhookId": "e1a0cd06-6507-4a1d-8bf1-511676961079"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a lead scoring assistant. Read the customer's message and classify their buying intent as exactly one word: HOT, WARM, or COLD. HOT = urgent buying intent. WARM = interested but not urgent. COLD = just browsing. Respond with ONLY the single word, nothing else.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.body.message }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "2855d3e0-9436-4f70-b7c8-d4fa6c2ea0df",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6UdqzSEEdaESBmbE",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "=HOT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2e5cb3e0-88b3-4873-b42e-2eb12b001d37"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HOT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "23bfb448-9c9d-4213-b263-1292d43af359",
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "WARM",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WARM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "dd1a25da-6972-4bf2-852d-2815cf8274a3",
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "COLD",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "COLD"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "fc8f7ea6-527d-4b9d-801d-c52644924183",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BBQTF9WTY",
+          "mode": "id"
+        },
+        "text": "=🔥 HOT LEAD: {{ $('Webhook').item.json.body.name }} , {{ $('Webhook').item.json.body.email }} -- {{ $('Webhook').item.json.body.message }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        624,
+        -240
+      ],
+      "id": "24c3e7b2-db8c-43c8-b0f0-326ef6f653fc",
+      "name": "Send a message",
+      "webhookId": "e21355e1-7b1f-4274-b7cd-ede51f759914",
+      "credentials": {
+        "slackApi": {
+          "id": "Nb9eMtYXuvnoCExV",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-lead-crm",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $('Webhook').item.json.body.name }}",
+            "EMAIL": "={{ $('Webhook').item.json.body.email }}",
+            "MESSAGE": "={{ $('Webhook').item.json.body.message }}",
+            "SCORE": "={{ $json.choices[0].message.content }}",
+            "STATUS": "NEW",
+            "TIMESTAMP": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGE",
+              "displayName": "MESSAGE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SCORE",
+              "displayName": "SCORE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIMESTAMP",
+              "displayName": "TIMESTAMP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "fef96216-18bf-4851-b369-f0598384c069",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-lead-crm",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBGV4oI88OJrSc2HuVQc-VGyPlSlkUXwQOauxuCDAOQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NAME": "={{ $('Webhook').item.json.body.name }}",
+            "EMAIL": "={{ $('Webhook').item.json.body.email }}",
+            "MESSAGE": "={{ $('Webhook').item.json.body.message }}",
+            "SCORE": "={{ $json.choices[0].message.content }}",
+            "STATUS": "NEW",
+            "TIMESTAMP": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "NAME",
+              "displayName": "NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EMAIL",
+              "displayName": "EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "MESSAGE",
+              "displayName": "MESSAGE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SCORE",
+              "displayName": "SCORE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TIMESTAMP",
+              "displayName": "TIMESTAMP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        224
+      ],
+      "id": "c0fce291-3690-4f3b-9442-68248d1303f8",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        -16
+      ],
+      "id": "5d940461-3c7b-4420-a9ea-e7daabf85a0e",
+      "name": "Wait",
+      "webhookId": "10c486f6-d679-43bf-90e2-f51402708200"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "Following up on your question",
+        "emailType": "text",
+        "message": "={{ $json.choices[0].message.content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        -16
+      ],
+      "id": "48c30df3-eed6-4aca-969a-985232186c19",
+      "name": "Send a message1",
+      "webhookId": "8262504c-ab14-40ff-96f7-2814f5f922fc",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qqZbVWhntymClvpP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You write short, warm, human-sounding follow-up emails for a small business. The lead's name and original message will be given to you. Reference what they specifically asked about. Keep it under 80 words, conversational, no corporate jargon, no subject line, no greeting like 'Dear', sign off simply as 'The Team'. Output ONLY the email body text, nothing else.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Lead name: {{ $('Webhook').item.json.body.name }}\\nLead's original message: {{ $('Webhook').item.json.body.message }}\\nLead score: {{ $('HTTP Request').item.json.choices[0].message.content }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1152,
+        -16
+      ],
+      "id": "85c74766-03fc-42b5-b6c4-ee2a64ad3bb9",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6UdqzSEEdaESBmbE",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        224
+      ],
+      "id": "0642881f-5232-4912-8eb4-20123ad9db67",
+      "name": "Wait1",
+      "webhookId": "34c7cdcd-054f-4d4d-bc26-b01ef489c868"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You write short, low-pressure, friendly check-in emails for a small business. The lead only showed casual interest, not buying intent — so do NOT push pricing, urgency, or a sales pitch. Just stay friendly, mention you're around if they ever have questions, and keep it light. Reference what they said only briefly. Under 60 words. No subject line, no 'Dear', sign off as 'The Team'. Output ONLY the email body.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Lead name: {{ $('Webhook').item.json.body.name }}\\nLead's email : {{$('Webhook').item.json.body.email}}\\nLead's original message: {{ $('Webhook').item.json.body.message }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1104,
+        224
+      ],
+      "id": "f08fde4a-3b6f-4211-9e1f-ea90940913cc",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6UdqzSEEdaESBmbE",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "Just Checking In",
+        "emailType": "text",
+        "message": "={{ $json.choices[0].message.content }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        224
+      ],
+      "id": "88c92835-7ec0-43f2-8ab2-13183220fb41",
+      "name": "Send a message2",
+      "webhookId": "65872053-f018-4188-a320-4b3a8985428c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qqZbVWhntymClvpP",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4db05d91-ea38-46c6-ac5c-e234afb4f5c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e6661d111fee1d2a00b75ea4b24e7f3dbffd39d9fedf5aec30935111d882145"
+  },
+  "nodeGroups": [],
+  "id": "wuftZcmchV3ThrV3",
+  "tags": []
+}

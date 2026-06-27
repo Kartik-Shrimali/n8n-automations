@@ -1,0 +1,1030 @@
+{
+  "name": "Payment & Invoicing Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "create-invoice",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        -112
+      ],
+      "id": "cf85bcd7-8759-4842-ae99-3ca161827e3b",
+      "name": "Webhook",
+      "webhookId": "b14e11ad-d3a0-486b-bb54-2676571b3009",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "weP39SogKtJevGpA",
+          "name": "Invoice Webhook Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.razorpay.com/v1/payment_links",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={   \"amount\": {{ $json.body.amount * 100 }},   \"currency\": \"INR\",   \"description\": \"{{ $json.body.description }}\",   \"customer\": {     \"name\": \"{{ $json.body.clientName }}\",     \"email\": \"{{ $json.body.clientEmail }}\",     \"contact\": \"{{ $json.body.clientPhone }}\"   } }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        144,
+        -112
+      ],
+      "id": "30639d39-cd7f-42b8-9883-ea9cd1412e2f",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "Mbdsw2BIntqFFNIG",
+          "name": "RazorPay Test Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-Payment Collection & Invoicing Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "INVOICE ID": "={{ $now.toMillis() }}",
+            "CLIENT NAME": "={{ $('Webhook').item.json.body.clientName }}",
+            "CLIENT PHONE": "={{ \"'\" + $('Webhook').item.json.body.clientPhone }}",
+            "CLIENT EMAIL": "={{ $('Webhook').item.json.body.clientEmail }}",
+            "DESCRIPTION": "={{ $('Webhook').item.json.body.description}}",
+            "AMOUNT": "={{ $('Webhook').item.json.body.amount }}",
+            "RAZORPAY PAYMENT LINK ID": "={{ $json.id }}",
+            "PAYMENT LINK URL": "={{ $json.short_url }}",
+            "STATUS": "PENDING",
+            "CREATED AT": "={{ \"'\" + new Date().toISOString() }}",
+            "DUE DATE": "={{\"'\" +  $('Webhook').item.json.body.dueDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "INVOICE ID",
+              "displayName": "INVOICE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CLIENT NAME",
+              "displayName": "CLIENT NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CLIENT PHONE",
+              "displayName": "CLIENT PHONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CLIENT EMAIL",
+              "displayName": "CLIENT EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIPTION",
+              "displayName": "DESCRIPTION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AMOUNT",
+              "displayName": "AMOUNT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "RAZORPAY PAYMENT LINK ID",
+              "displayName": "RAZORPAY PAYMENT LINK ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAYMENT LINK URL",
+              "displayName": "PAYMENT LINK URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CREATED AT",
+              "displayName": "CREATED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DUE DATE",
+              "displayName": "DUE DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LAST REMINDED AT",
+              "displayName": "LAST REMINDED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAID AT",
+              "displayName": "PAID AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -112
+      ],
+      "id": "f64b69fe-0651-49cd-8297-6f2bd7f4c6ef",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  {\n    \"success\" : true,\n    \"invoiceId\" : $json['INVOICE ID'],\n    \"paymentLink\" : $json['PAYMENT LINK URL'],\n    \"amount\" : $json.AMOUNT\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        592,
+        -112
+      ],
+      "id": "a0b73113-2f15-4b31-9008-4e3fc3c3250e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "razorpay-webhook",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        208
+      ],
+      "id": "7e594785-00bd-460c-8fe7-f1d82da41d78",
+      "name": "Webhook1",
+      "webhookId": "54115db7-af30-434f-9a18-7b4571ff9244"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst item = $input.first();\n\n// Pull the true raw bytes (not re-parsed JSON) from the binary property\nconst rawBodyBuffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst rawBody = rawBodyBuffer.toString('utf-8');\n\nconst receivedSignature = item.json.headers['x-razorpay-signature'];\nconst secret = $env.RAZORPAY_WEBHOOK_SECRET; // must exactly match the secret you set in Razorpay's dashboard\n\nconst expectedSignature = crypto\n  .createHmac('sha256', secret)\n  .update(rawBody)\n  .digest('hex');\n\n// Timing-safe comparison — prevents leaking info via response-time differences\nconst isValid = receivedSignature && expectedSignature.length === receivedSignature.length &&\n  crypto.timingSafeEqual(Buffer.from(receivedSignature), Buffer.from(expectedSignature));\n\nreturn [{\n  json: {\n    isValid,\n    ...JSON.parse(rawBody)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        208
+      ],
+      "id": "a4a9d450-e00a-46d4-b179-77e5b0c65053",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4c529982-495b-44f7-904f-59608dcf29db",
+              "leftValue": "={{ $json.isValid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "8109e3c5-d506-40eb-a598-0b14897e8db2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-Payment Collection & Invoicing Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "RAZORPAY PAYMENT LINK ID",
+              "lookupValue": "={{ $json.payload.payment_link.entity.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        112
+      ],
+      "id": "91a87c83-a79d-49d4-b111-93ed13769e41",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-Payment Collection & Invoicing Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "STATUS": "PAID",
+            "PAID AT": "={{ \"'\" + new Date().toISOString() }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "INVOICE ID",
+              "displayName": "INVOICE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT NAME",
+              "displayName": "CLIENT NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT PHONE",
+              "displayName": "CLIENT PHONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT EMAIL",
+              "displayName": "CLIENT EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DESCRIPTION",
+              "displayName": "DESCRIPTION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AMOUNT",
+              "displayName": "AMOUNT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "RAZORPAY PAYMENT LINK ID",
+              "displayName": "RAZORPAY PAYMENT LINK ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PAYMENT LINK URL",
+              "displayName": "PAYMENT LINK URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CREATED AT",
+              "displayName": "CREATED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DUE DATE",
+              "displayName": "DUE DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LAST REMINDED AT",
+              "displayName": "LAST REMINDED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PAID AT",
+              "displayName": "PAID AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        112
+      ],
+      "id": "609dbabb-9f0b-453b-84cf-56d5bf9c447a",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"message\": \"Invalid signature\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        592,
+        304
+      ],
+      "id": "4a716f60-a13a-411c-b28e-9d6f0940450e",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Invoice marked as paid\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        112
+      ],
+      "id": "10f91e04-46fd-4f98-8f66-d008a436786d",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -80,
+        528
+      ],
+      "id": "800fc870-ab3f-47b4-86f8-8d076434b983",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-Payment Collection & Invoicing Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        144,
+        528
+      ],
+      "id": "4050a7fe-b381-46da-9d3e-c3cd04bc1197",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a4899494-95af-4d47-b387-3ed71af069ac",
+              "leftValue": "={{ \n  $json.STATUS === 'PENDING' &&\n  DateTime.now().setZone('Asia/Kolkata').startOf('day') > DateTime.fromISO($json['DUE DATE'].replace(/^'/, ''), { zone: 'Asia/Kolkata' }).startOf('day') &&\n  (\n    !$json['LAST REMINDED AT'] ||\n    DateTime.now().setZone('Asia/Kolkata').diff(DateTime.fromISO($json['LAST REMINDED AT'].replace(/^'/, ''), { zone: 'Asia/Kolkata' }), 'hours').hours >= 24\n  )\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        528
+      ],
+      "id": "f8212942-8dfe-4cae-a93b-cde9b6f2a490",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['CLIENT EMAIL'] }}",
+        "subject": "=Payment Reminder - Invoice for {{ $json.description }}",
+        "message": "=Hi {{ $json['CLIENT NAME'] }},  This is a friendly reminder that payment of ₹{{ $json.AMOUNT }} for \"{{ $json.DESCRIPTION }}\" is now overdue (was due {{ $json['DUE DATE'].replace(\"'\", \"\") }}).  You can complete the payment here: {{ $json['PAYMENT LINK URL'] }}  Thanks, The Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        528
+      ],
+      "id": "9da44c95-290d-45e0-816d-19a9e7b19892",
+      "name": "Send a message",
+      "webhookId": "f3186b0f-ddad-4dda-a9dc-5cc918a15491",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "qqZbVWhntymClvpP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8",
+          "mode": "list",
+          "cachedResultName": "n8n-practice-Payment Collection & Invoicing Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zozUFoFbQf8kQ1C996vU9O-Y0Da2EFYr_qgKFCb2VL8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Filter').item.json.row_number }}",
+            "LAST REMINDED AT": "={{ \"'\" + new Date().toISOString() }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "INVOICE ID",
+              "displayName": "INVOICE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT NAME",
+              "displayName": "CLIENT NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT PHONE",
+              "displayName": "CLIENT PHONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CLIENT EMAIL",
+              "displayName": "CLIENT EMAIL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DESCRIPTION",
+              "displayName": "DESCRIPTION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "AMOUNT",
+              "displayName": "AMOUNT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "RAZORPAY PAYMENT LINK ID",
+              "displayName": "RAZORPAY PAYMENT LINK ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PAYMENT LINK URL",
+              "displayName": "PAYMENT LINK URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CREATED AT",
+              "displayName": "CREATED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DUE DATE",
+              "displayName": "DUE DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LAST REMINDED AT",
+              "displayName": "LAST REMINDED AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PAID AT",
+              "displayName": "PAID AT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        528
+      ],
+      "id": "7bdd5392-b4d2-4745-a438-ad3bdbb82a0c",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YJ0JdJoBRxbEFaOi",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "37520830-bda6-4840-bf63-1f7fa92c6dbd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2e6661d111fee1d2a00b75ea4b24e7f3dbffd39d9fedf5aec30935111d882145"
+  },
+  "nodeGroups": [],
+  "id": "NBFZG9qUhHQSSSLT",
+  "tags": []
+}
